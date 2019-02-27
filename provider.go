@@ -37,6 +37,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	client, err := gotransip.NewSOAPClient(gotransip.ClientConfig{
 		AccountName:    d.Get("account_name").(string),
 		PrivateKeyBody: []byte(d.Get("private_key").(string)),
+		Mode:           gotransip.APIModeReadOnly,
 	})
 	if err != nil {
 		return nil, err
