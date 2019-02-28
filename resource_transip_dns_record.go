@@ -10,13 +10,15 @@ import (
 	"github.com/transip/gotransip/domain"
 )
 
-func resourceDNSEntry() *schema.Resource {
+func resourceDNSRecord() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceDNSEntryCreate,
-		Read:   resourceDNSEntryRead,
-		Update: resourceDNSEntryUpdate,
-		Delete: resourceDNSEntryDelete,
-
+		Create: resourceDNSRecordCreate,
+		Read:   resourceDNSRecordRead,
+		Update: resourceDNSRecordUpdate,
+		Delete: resourceDNSRecordDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 		Schema: map[string]*schema.Schema{
 			"domain": &schema.Schema{
 				Type:     schema.TypeString,
@@ -57,7 +59,7 @@ func resourceDNSEntry() *schema.Resource {
 	}
 }
 
-func resourceDNSEntryCreate(d *schema.ResourceData, m interface{}) error {
+func resourceDNSRecordCreate(d *schema.ResourceData, m interface{}) error {
 	domainName := d.Get("domain")
 
 	entry := domain.DNSEntry{
@@ -67,21 +69,33 @@ func resourceDNSEntryCreate(d *schema.ResourceData, m interface{}) error {
 		d.Get("content").(string),
 	}
 
-	id := fmt.Sprintf("%s-%s-%s-%s-%s",
-		domainName, entry.Name, entry.TTL, entry.Type, entry.Content)
+	id := fmt.Sprintf("%s/%s",
+		domainName, entry.Name)
 	d.SetId(id)
 
-	return resourceDNSEntryRead(d, m)
+	return resourceDNSRecordRead(d, m)
 }
 
-func resourceDNSEntryRead(d *schema.ResourceData, m interface{}) error {
+func resourceDNSRecordRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(gotransip.Client)
+
+	id := d.Id()
+	if id != "" {
+		idparts := strings.Split(id, "/")
+		if len(idparts) == 2 {
+			d.Set("domain", idparts[0])
+			d.Set("name", idparts[1])
+		} else {
+			return fmt.Errorf("Incorrect ID format, should match `domainname/name`")
+		}
+	}
+
 	domainName := d.Get("domain").(string)
 	name := d.Get("name").(string)
 
 	dom, err := domain.GetInfo(client, domainName)
 	if err != nil {
-		return fmt.Errorf("failed to get domain %s for reading entry: %s", domainName, err)
+		return fmt.Errorf("failed to get domain %s for reading DNS record entries: %s", domainName, err)
 	}
 
 	entries := []domain.DNSEntry{}
@@ -106,10 +120,10 @@ func resourceDNSEntryRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceDNSEntryUpdate(d *schema.ResourceData, m interface{}) error {
-	return resourceDNSEntryRead(d, m)
+func resourceDNSRecordUpdate(d *schema.ResourceData, m interface{}) error {
+	return resourceDNSRecordRead(d, m)
 }
 
-func resourceDNSEntryDelete(d *schema.ResourceData, m interface{}) error {
+func resourceDNSRecordDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }

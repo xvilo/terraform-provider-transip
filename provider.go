@@ -23,8 +23,8 @@ func Provider() *schema.Provider {
 		ConfigureFunc: providerConfigure,
 
 		ResourcesMap: map[string]*schema.Resource{
-			"transip_dns_entry": resourceDNSEntry(),
-			"transip_domain":    resourceDomain(),
+			"transip_dns_record": resourceDNSRecord(),
+			"transip_domain":     resourceDomain(),
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{

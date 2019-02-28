@@ -5,35 +5,42 @@ provider "transip" {
   private_key  = "${var.private_key}"
 }
 
-data "transip_domain" "example_com" {
-  name = "ijohan.nl"
-}
+# data "transip_domain" "example_com" {
+#   name = "ijohan.nl"
+# }
 
-resource "transip_dns_entry" "test" {
-  domain  = "${data.transip_domain.example_com.id}"
-  name    = "test"
-  type    = "CNAME"
-  content = "@"
-}
+# resource "transip_dns_entry" "test" {
+#   domain  = "${data.transip_domain.example_com.id}"
+#   name    = "test"
+#   type    = "CNAME"
+#   content = "@"
+# }
 
-output "domain_id" {
-  value = "${data.transip_domain.example_com.id}"
-}
+# output "domain_id" {
+#   value = "${data.transip_domain.example_com.id}"
+# }
 
-output "locked" {
-  value = "${data.transip_domain.example_com.is_locked}"
-}
+# output "locked" {
+#   value = "${data.transip_domain.example_com.is_locked}"
+# }
 
-output "domain_name" {
-  value = "${data.transip_domain.example_com.name}"
-}
+# output "domain_name" {
+#   value = "${data.transip_domain.example_com.name}"
+# }
 
-output "ns" {
-  value = "${lookup(data.transip_domain.example_com.nameservers[0], "hostname")}"
-}
+# output "ns" {
+#   value = "${lookup(data.transip_domain.example_com.nameservers[0], "hostname")}"
+# }
 
 resource "transip_domain" "test" {
   name = "locohost.nl"
+}
+
+resource "transip_dns_entry" "www" {
+  domain  = "${transip_domain.test.id}"
+  name    = "www"
+  type    = "CNAME"
+  content = "@"
 }
 
 resource "transip_dns_entry" "test1" {
